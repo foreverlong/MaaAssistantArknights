@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -204,7 +205,8 @@ namespace MaaWpfGui.ViewModels.UI
                 ConfigurationHelper.SetFacilityOrder(newVm.OriginalName, i.ToString());
             }
 
-            InfrastItemViewModels = new ObservableCollection<DragItemViewModel>(tempOrderList);
+            InfrastItemViewModels = new ObservableCollection<DragItemViewModel>(tempOrderList!);
+            InfrastItemViewModels.CollectionChanged += InfrastOrderSelectionChanged;
 
             _dormThresholdLabel = LocalizationHelper.GetString("DormThreshold") + ": " + _dormThreshold + "%";
         }
@@ -911,21 +913,6 @@ namespace MaaWpfGui.ViewModels.UI
             Instances.TaskQueueViewModel.QuickSwitchAccount();
         }
 
-        private bool _minimizingStartup = Convert.ToBoolean(ConfigurationHelper.GetValue(ConfigurationKeys.MinimizingStartup, bool.FalseString));
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to minimally start the emulator
-        /// </summary>
-        public bool MinimizingStartup
-        {
-            get => _minimizingStartup;
-            set
-            {
-                SetAndNotify(ref _minimizingStartup, value);
-                ConfigurationHelper.SetValue(ConfigurationKeys.MinimizingStartup, value.ToString());
-            }
-        }
-
         private string _emulatorPath = ConfigurationHelper.GetValue(ConfigurationKeys.EmulatorPath, string.Empty);
 
         /// <summary>
@@ -1206,53 +1193,13 @@ namespace MaaWpfGui.ViewModels.UI
             _runningState.SetIdle(idle);
         }
 
-        private static void MinimizeEmulator(Process process)
+        /// <summary>
+        /// 尝试启动模拟器
+        /// </summary>
+        /// <param name="openWithMaaLaunch">启动 MAA 后自动开启模拟器</param>
+        public void TryToStartEmulator(bool openWithMaaLaunch = false)
         {
-            _logger.Information("Try minimizing the emulator");
-            int attempts;
-            IntPtr hWnd = IntPtr.Zero;
-            int elapsed = 0;
-            const int Interval = 100; // 轮询间隔时间（毫秒）
-
-            while (hWnd == IntPtr.Zero && elapsed < 100000)
-            {
-                hWnd = process.MainWindowHandle;
-                if (hWnd != IntPtr.Zero)
-                {
-                    break;
-                }
-
-                Thread.Sleep(Interval);
-                elapsed += Interval;
-            }
-
-            if (hWnd == IntPtr.Zero)
-            {
-                throw new Exception("Failed to get the emulator window handle.");
-            }
-
-            for (attempts = 0; !IsIconic(hWnd) && attempts < 100; ++attempts)
-            {
-                ShowWindow(0xD9A0E8E, SWMINIMIZE);
-                Thread.Sleep(10);
-                if (process.HasExited)
-                {
-                    throw new Exception("Emulator process has exited.");
-                }
-            }
-
-            if (attempts < 1000)
-            {
-                return;
-            }
-
-            _logger.Information("Attempts to exceed the limit");
-            throw new Exception("Failed to minimize emulator within the limit.");
-        }
-
-        public void TryToStartEmulator(bool manual = false)
-        {
-            if (EmulatorPath.Length == 0 || !File.Exists(EmulatorPath) || (!OpenEmulatorAfterLaunch && !manual))
+            if (EmulatorPath.Length == 0 || !File.Exists(EmulatorPath) || (!OpenEmulatorAfterLaunch && openWithMaaLaunch))
             {
                 return;
             }
@@ -1275,19 +1222,6 @@ namespace MaaWpfGui.ViewModels.UI
 
                 _logger.Information("Try to start emulator: \nfileName: " + fileName + "\narguments: " + arguments);
                 process.Start();
-
-                try
-                {
-                    process.WaitForInputIdle();
-                    if (MinimizingStartup)
-                    {
-                        MinimizeEmulator(process);
-                    }
-                }
-                catch (Exception)
-                {
-                    _logger.Warning("Failed to minimize the emulator");
-                }
             }
             catch (Exception)
             {
@@ -1626,8 +1560,11 @@ namespace MaaWpfGui.ViewModels.UI
         /// <summary>
         /// 实时更新基建换班顺序
         /// </summary>
-        public void InfrastOrderSelectionChanged()
+        /// <param name="sender">ignored object</param>
+        /// <param name="e">ignored NotifyCollectionChangedEventArgs</param>
+        public void InfrastOrderSelectionChanged(object? sender = null, NotifyCollectionChangedEventArgs? e = null)
         {
+            _ = (sender, e);
             int index = 0;
             foreach (var item in InfrastItemViewModels)
             {

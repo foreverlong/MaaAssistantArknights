@@ -14,6 +14,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -71,10 +72,11 @@ namespace MaaWpfGui.ViewModels.UI
         /// <summary>
         /// 实时更新任务顺序
         /// </summary>
-        // UI 绑定的方法
-        // ReSharper disable once MemberCanBePrivate.Global
-        public void TaskItemSelectionChanged()
+        /// <param name="sender">ignored object</param>
+        /// <param name="e">ignored NotifyCollectionChangedEventArgs</param>
+        public void TaskItemSelectionChanged(object sender = null, NotifyCollectionChangedEventArgs e = null)
         {
+            _ = (sender, e);
             Execute.OnUIThread(() =>
             {
                 int index = 0;
@@ -530,6 +532,7 @@ namespace MaaWpfGui.ViewModels.UI
                 {
                     _logger.Information("Not idle, Stop and CloseDown");
                     await Stop();
+                    SetStopped();
                 }
 
                 var mode = Instances.SettingsViewModel.ClientType;
@@ -641,6 +644,7 @@ namespace MaaWpfGui.ViewModels.UI
             }
 
             TaskItemViewModels = new ObservableCollection<DragItemViewModel>(tempOrderList);
+            TaskItemViewModels.CollectionChanged += TaskItemSelectionChanged;
 
             InitDrops();
             NeedToUpdateDatePrompt();
@@ -1055,7 +1059,7 @@ namespace MaaWpfGui.ViewModels.UI
             {
                 AddLog(LocalizationHelper.GetString("ConnectFailed") + "\n" + LocalizationHelper.GetString("TryToStartEmulator"));
 
-                await Task.Run(() => Instances.SettingsViewModel.TryToStartEmulator(true));
+                await Task.Run(() => Instances.SettingsViewModel.TryToStartEmulator());
 
                 if (Stopping)
                 {

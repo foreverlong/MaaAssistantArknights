@@ -609,7 +609,7 @@
     "PV-10@SideStoryStage": {
         "doc": "<PV-10> 文字与 <装配工坊> 位置靠近，容易误点，向右偏移一些",
         "text": ["PV-10"],
-        "rectMove": [55, 0, 0, 0]
+        "rectMove": [55, 0, 1, 1]
     },
     "PV-9@SideStoryStage": {
         "text": ["PV-9"]
@@ -3422,9 +3422,9 @@
         "next": ["Home@ReturnButtons#next"]
     },
     "StartToVisit": {
+        "method": "RGBCount",
         "action": "ClickSelf",
-        "template": ["StartToVisit.png", "StartToVisitDetermine.png", "StartToVisitSportsman"],
-        "templThreshold": [0.9, 0.9, 0.9],
+        "colorScales": [[250, 255]],
         "roi": [990, 90, 195, 165],
         "next": ["VisitNext", "VisitNext@LoadingText", "VisitNextBlack", "VisitNextOcr"],
         "postDelay": 2000
