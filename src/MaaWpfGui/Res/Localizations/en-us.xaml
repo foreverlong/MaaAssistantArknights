@@ -99,6 +99,7 @@
     <system:String x:Key="DefaultInfrast">Default Base infrastructure</system:String>
     <system:String x:Key="UserDefined">User defined</system:String>
     <system:String x:Key="153Time3">153 3 times a day</system:String>
+    <system:String x:Key="153Time4">153 4 times a day</system:String>
     <system:String x:Key="243Time3">243 3 times a day</system:String>
     <system:String x:Key="243Time4">243 4 times a day</system:String>
     <system:String x:Key="333Time3">333 3 times a day</system:String>
@@ -728,6 +729,7 @@ The video aspect ratio needs to be 16:9 without interference factors such as bla
     <system:String x:Key="GiveUpUploadingPenguins">Abort upload to Penguin Statistics</system:String>
     <system:String x:Key="TheEx">No bonus stage, stopped</system:String>
     <system:String x:Key="MissingOperators">Operators of the following operator groups are missing:</system:String>
+    <system:String x:Key="RecruitSuppportOperator">Add support unit: {0}</system:String>
     <system:String x:Key="StageQueue">Stage Queue:</system:String>
     <system:String x:Key="UnableToAgent">Unable to use PRTS</system:String>
     <system:String x:Key="MissionStart">Mission started</system:String>
